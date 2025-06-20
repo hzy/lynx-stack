@@ -153,6 +153,8 @@ export class BackgroundSnapshotInstance {
 
     traverseSnapshotInstance(node, v => {
       v.__parent = null;
+      v.__previousSibling = null;
+      v.__nextSibling = null;
       globalBackgroundSnapshotInstancesToRemove.push(v.__id);
     });
   }

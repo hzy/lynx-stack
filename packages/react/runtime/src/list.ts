@@ -290,6 +290,9 @@ export function componentAtIndexFactory(ctx: SnapshotInstance[]): ComponentAtInd
       recycleSignMap.delete(sign);
       hydrate(oldCtx, childCtx);
       oldCtx.unRenderElements();
+      if (!oldCtx.__id) {
+        oldCtx.tearDown();
+      }
       const root = childCtx.__element_root!;
       if (enableReuseNotification) {
         __FlushElementTree(root, {
