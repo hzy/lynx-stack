@@ -225,6 +225,7 @@ export const __pendingListUpdates = {
 
 export const gSignMap: Record<number, Map<number, SnapshotInstance>> = {};
 export const gRecycleMap: Record<number, Map<string, Map<number, SnapshotInstance>>> = {};
+const gParentWeakMap: WeakMap<SnapshotInstance, unknown> = new WeakMap();
 
 export function clearListGlobal(): void {
   for (const key in gSignMap) {
@@ -236,6 +237,23 @@ export function clearListGlobal(): void {
 }
 
 export function componentAtIndexFactory(ctx: SnapshotInstance[]): ComponentAtIndexCallback {
+  // A hack workaround to ensure childCtx has no direct reference through `__parent` to list,
+  // to avoid memory leak.
+  // TODO(hzy): make `__parent` a WeakRef or `#__parent` in the future.
+  ctx.forEach((childCtx) => {
+    if (gParentWeakMap.has(childCtx)) {
+      // do it only once
+    } else {
+      gParentWeakMap.set(childCtx, childCtx.parentNode!);
+      Object.defineProperty(childCtx, '__parent', {
+        get: () => gParentWeakMap.get(childCtx)!,
+        set: (value: unknown) => {
+          gParentWeakMap.set(childCtx, value);
+        },
+      });
+    }
+  });
+
   const componentAtIndex = (
     list: FiberElement,
     listID: number,
