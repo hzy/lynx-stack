@@ -4,16 +4,16 @@
 import { applyRefQueue } from './snapshot/workletRef.js';
 import type { SnapshotInstance } from './snapshot.js';
 
-export const gSignMap: Record<number, Map<number, SnapshotInstance>> = {};
-export const gRecycleMap: Record<number, Map<string, Map<number, SnapshotInstance>>> = {};
-const gParentWeakMap: WeakMap<SnapshotInstance, unknown> = new WeakMap();
+/* @__NO_SIDE_EFFECTS__ */ globalThis.__gSignMap = {};
+/* @__NO_SIDE_EFFECTS__ */ globalThis.__gRecycleMap = {};
+/* @__NO_SIDE_EFFECTS__ */ globalThis.__gParentWeakMap = new WeakMap();
 
 export function clearListGlobal(): void {
-  for (const key in gSignMap) {
-    delete gSignMap[key];
+  for (const key in __gSignMap) {
+    delete __gSignMap[key];
   }
-  for (const key in gRecycleMap) {
-    delete gRecycleMap[key];
+  for (const key in __gRecycleMap) {
+    delete __gRecycleMap[key];
   }
 }
 
@@ -25,14 +25,14 @@ export function componentAtIndexFactory(
   // to avoid memory leak.
   // TODO(hzy): make `__parent` a WeakRef or `#__parent` in the future.
   ctx.forEach((childCtx) => {
-    if (gParentWeakMap.has(childCtx)) {
+    if (__gParentWeakMap.has(childCtx)) {
       // do it only once
     } else {
-      gParentWeakMap.set(childCtx, childCtx.parentNode!);
+      __gParentWeakMap.set(childCtx, childCtx.parentNode!);
       Object.defineProperty(childCtx, '__parent', {
-        get: () => gParentWeakMap.get(childCtx)!,
+        get: () => __gParentWeakMap.get(childCtx)!,
         set: (value: unknown) => {
-          gParentWeakMap.set(childCtx, value);
+          __gParentWeakMap.set(childCtx, value);
         },
       });
     }
@@ -47,8 +47,8 @@ export function componentAtIndexFactory(
     enableBatchRender: boolean = false,
     asyncFlush: boolean = false,
   ) => {
-    const signMap = gSignMap[listID];
-    const recycleMap = gRecycleMap[listID];
+    const signMap = __gSignMap[listID];
+    const recycleMap = __gRecycleMap[listID];
     if (!signMap || !recycleMap) {
       throw new Error('componentAtIndex called on removed list');
     }
@@ -181,8 +181,8 @@ export function componentAtIndexFactory(
 export function enqueueComponentFactory(): EnqueueComponentCallback {
   // eslint-disable-next-line unicorn/consistent-function-scoping
   const enqueueComponent = (_: FiberElement, listID: number, sign: number) => {
-    const signMap = gSignMap[listID];
-    const recycleMap = gRecycleMap[listID];
+    const signMap = __gSignMap[listID];
+    const recycleMap = __gRecycleMap[listID];
     if (!signMap || !recycleMap) {
       throw new Error('enqueueComponent called on removed list');
     }

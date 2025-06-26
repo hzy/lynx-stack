@@ -2,7 +2,7 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 import { hydrate } from './hydrate.js';
-import { componentAtIndexFactory, enqueueComponentFactory, gRecycleMap, gSignMap } from './list.js';
+import { componentAtIndexFactory, enqueueComponentFactory } from './list.js';
 import { CHILDREN } from './renderToOpcodes/constants.js';
 import { SnapshotInstance } from './snapshot.js';
 
@@ -50,8 +50,8 @@ export function ssrHydrateByOpcodes(
         if (top.__snapshot_def.isListHolder) {
           const listElement = top.__element_root!;
           const listElementUniqueID = __GetElementUniqueID(listElement);
-          const signMap = gSignMap[listElementUniqueID] = new Map();
-          gRecycleMap[listElementUniqueID] = new Map();
+          const signMap = __gSignMap[listElementUniqueID] = new Map();
+          __gRecycleMap[listElementUniqueID] = new Map();
           const enqueueFunc = enqueueComponentFactory();
           const [componentAtIndex, componentAtIndexes] = componentAtIndexFactory(top.childNodes, hydrate);
           for (const child of top.childNodes) {

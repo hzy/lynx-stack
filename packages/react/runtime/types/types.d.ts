@@ -245,6 +245,10 @@ declare global {
   }
 
   declare function processData(data: InitDataRaw, processorName?: string): InitData;
+
+  var __gSignMap: Record<number, Map<number, SnapshotInstance>>;
+  var __gRecycleMap: Record<number, Map<string, Map<number, SnapshotInstance>>>;
+  var __gParentWeakMap: WeakMap<SnapshotInstance, unknown>;
 }
 
 interface NativeApp {
